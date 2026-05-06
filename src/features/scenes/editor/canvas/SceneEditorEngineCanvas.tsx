@@ -1,6 +1,6 @@
 import { SceneEditorCanvas } from "../SceneEditorCanvas";
 import type { SceneEditorCanvasProps } from "../sceneEditorTypes";
 
-export function SceneEditor2DCanvas(props: SceneEditorCanvasProps) {
+export function SceneEditorEngineCanvas(props: SceneEditorCanvasProps) {
   return <SceneEditorCanvas {...props} />;
 }
