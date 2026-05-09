@@ -20,11 +20,11 @@ import {
   Type,
   Wand2,
 } from "lucide-react";
-import type { SemanticTone } from "../../../theme/semanticColorRegistry";
-import { semanticIconClass, toneForFileKind } from "../../../theme/semanticColorRegistry";
+import type { SemanticTone } from "../../theme/semanticColorRegistry";
+import { semanticIconClass, toneForFileKind } from "../../theme/semanticColorRegistry";
 
-export function sceneContextIcon(name: string, size = 14) {
-  const className = semanticIconClass(toneForSceneContextIcon(name));
+export function sceneIcon(name: string, size = 14) {
+  const className = semanticIconClass(toneForSceneIcon(name));
   switch (name) {
     case "scene":
       return <FileText size={size} className={className} />;
@@ -79,7 +79,7 @@ export function sceneContextIcon(name: string, size = 14) {
   }
 }
 
-function toneForSceneContextIcon(name: string): SemanticTone {
+function toneForSceneIcon(name: string): SemanticTone {
   if (name === "scene") return toneForFileKind("sceneDocument");
   if (name === "script") return toneForFileKind("sceneScript");
   if (name === "assets") return "domain-assets";
