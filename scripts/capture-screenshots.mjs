@@ -47,8 +47,6 @@ async function main() {
   const baseUrl = `http://127.0.0.1:${port}`;
   const views = [
     { id: "splash", url: `${baseUrl}/?screenshot=splash`, width: 1440, height: 900 },
-    { id: "startup", url: `${baseUrl}/?screenshot=startup`, width: 1440, height: 900 },
-    { id: "workspace", url: `${baseUrl}/?screenshot=workspace`, width: 1600, height: 1000 },
   ];
 
   const command = process.platform === "win32" ? "cmd.exe" : "npm";

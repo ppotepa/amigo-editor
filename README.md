@@ -24,8 +24,8 @@ The screenshot harness renders deterministic frontend-only views through Vite, w
 npm run screenshots
 ```
 
-Generated images are written to `screenshots/`:
+Current real screenshot coverage:
 
 ![Splash](screenshots/splash.png)
-![Startup](screenshots/startup.png)
-![Workspace](screenshots/workspace.png)
+
+Startup and workspace screenshots are intentionally not generated yet. They need a real app-state/API harness around the existing React components so the images represent application code rather than static mockups.
