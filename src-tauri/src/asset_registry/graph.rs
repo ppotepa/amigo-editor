@@ -467,6 +467,10 @@ fn normalize_reference(value: &str) -> String {
         .to_owned()
 }
 
+fn trim_yaml_extension(value: &str) -> &str {
+    value.trim_end_matches(".yaml").trim_end_matches(".yml")
+}
+
 fn singular_reference_field(field: &str) -> &str {
     match field {
         "assets" => "asset",
@@ -486,7 +490,9 @@ fn singular_reference_field(field: &str) -> &str {
 fn starts_with_asset_area(value: &str) -> bool {
     matches!(
         value.split('/').next(),
-        Some("audio" | "data" | "fonts" | "packages" | "scenes" | "scripts" | "spritesheets")
+        Some(
+            "audio" | "data" | "fonts" | "packages" | "scenes" | "scripts" | "spritesheets" | "ui",
+        )
     )
 }
 

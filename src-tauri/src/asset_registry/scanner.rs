@@ -585,6 +585,15 @@ fn descriptor_info_for_path(relative_path: &str) -> Option<DescriptorInfo> {
             expected_kind: "script",
         });
     }
+    if normalized.starts_with("scripts/packages/")
+        && (normalized.ends_with("/package.yml") || normalized.ends_with("/package.yaml"))
+    {
+        return Some(DescriptorInfo {
+            area: "scripts/packages".to_owned(),
+            suffix: "package",
+            expected_kind: "script",
+        });
+    }
     if normalized.starts_with("packages/")
         && (normalized.ends_with("/package.yml") || normalized.ends_with("/package.yaml"))
     {
@@ -757,6 +766,12 @@ fn descriptor_asset_key(mod_id: &str, relative: &str, info: &DescriptorInfo) -> 
     }
     if normalized.starts_with("scripts/") && normalized.ends_with(".rhai") {
         return Some(format!("{mod_id}/{}", normalized.trim_end_matches(".rhai")));
+    }
+    if normalized.starts_with("scripts/packages/")
+        && (normalized.ends_with("/package.yml") || normalized.ends_with("/package.yaml"))
+    {
+        let package_id = normalized.split('/').nth(2)?;
+        return Some(format!("{mod_id}/scripts/packages/{package_id}"));
     }
     if normalized.starts_with("prefabs/")
         && (normalized.ends_with(".prefab.yml") || normalized.ends_with(".prefab.yaml"))
