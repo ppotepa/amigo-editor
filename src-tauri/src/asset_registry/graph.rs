@@ -49,7 +49,7 @@ pub fn build_asset_graph(mut registry: AssetRegistryDto) -> AssetRegistryDto {
             .map(|source| source.relative_path.clone())
             .collect::<BTreeSet<_>>();
 
-        for (field, value) in descriptor_references(asset) {
+        for (field, value) in descriptor_references(&mod_id, Path::new(&registry.root_path), asset) {
             if let Some(reference_key) =
                 resolve_reference_key(&mod_id, asset, &field, &value, &asset_keys)
             {
@@ -169,16 +169,25 @@ fn parent_key_for_asset(mod_id: &str, asset: &ManagedAssetDto) -> Option<String>
     None
 }
 
-fn descriptor_references(asset: &ManagedAssetDto) -> Vec<(String, String)> {
+fn descriptor_references(
+    mod_id: &str,
+    mod_root: &Path,
+    asset: &ManagedAssetDto,
+) -> Vec<(String, String)> {
     let Ok(source) = std::fs::read_to_string(Path::new(&asset.descriptor_path)) else {
         return Vec::new();
     };
     if asset.kind == "scene" {
-        if let Ok(scene) = amigo_scene::load_scene_document_from_str(&source) {
-            let refs = scene_refs::scene_asset_refs(&scene)
+        if let Ok(compiled) =
+            amigo_scene::compile_scene_document_from_path(&asset.descriptor_path, mod_root, mod_id)
+        {
+            let mut refs = scene_refs::scene_asset_refs(&compiled.document)
                 .into_iter()
                 .map(|value| ("asset".to_owned(), value))
                 .collect::<Vec<_>>();
+            refs.extend(compiled.dependencies.into_iter().filter_map(|dependency| {
+                compiled_dependency_reference(mod_root, asset, dependency)
+            }));
             if !refs.is_empty() {
                 return refs;
             }
@@ -225,6 +234,39 @@ fn descriptor_references(asset: &ManagedAssetDto) -> Vec<(String, String)> {
         ),
     }
     references
+}
+
+fn compiled_dependency_reference(
+    mod_root: &Path,
+    asset: &ManagedAssetDto,
+    dependency: amigo_scene::SceneDocumentDependency,
+) -> Option<(String, String)> {
+    let relative = dependency
+        .path
+        .strip_prefix(mod_root)
+        .ok()?
+        .to_string_lossy()
+        .replace('\\', "/");
+    match dependency.kind {
+        amigo_scene::SceneDocumentDependencyKind::UiDocument
+        | amigo_scene::SceneDocumentDependencyKind::UiTheme
+        | amigo_scene::SceneDocumentDependencyKind::UiModelBindings => {
+            Some(("asset".to_owned(), trim_yaml_extension(&relative).to_owned()))
+        }
+        amigo_scene::SceneDocumentDependencyKind::Script => {
+            let value = if asset.descriptor_relative_path.starts_with("scenes/") {
+                dependency
+                    .path
+                    .file_name()
+                    .map(|name| name.to_string_lossy().into_owned())
+                    .unwrap_or(relative)
+            } else {
+                relative.trim_end_matches(".rhai").to_owned()
+            };
+            Some(("script".to_owned(), value))
+        }
+        _ => None,
+    }
 }
 
 fn collect_named_reference_values(
