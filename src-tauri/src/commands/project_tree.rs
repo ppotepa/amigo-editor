@@ -30,26 +30,19 @@ pub fn get_scene_hierarchy(
     let document_path = discovered_mod
         .scene_document_path(&scene_id)
         .ok_or_else(|| format!("scene `{scene_id}` was not found in mod `{mod_id}`"))?;
-    let text = fs::read_to_string(&document_path).map_err(|error| {
+    let compiled = amigo_scene::compile_scene_document_from_path(
+        &document_path,
+        &discovered_mod.root_path,
+        &mod_id,
+    )
+    .map_err(|error| {
         format!(
-            "failed to read scene document `{}`: {error}",
-            document_path.display()
-        )
-    })?;
-    let value = serde_yaml::from_str::<Value>(&text).map_err(|error| {
-        format!(
-            "failed to parse scene document `{}`: {error}",
-            document_path.display()
-        )
-    })?;
-    let document = amigo_scene::load_scene_document_from_str(&text).map_err(|error| {
-        format!(
-            "failed to load scene document `{}`: {error}",
+            "failed to compile scene document `{}`: {error}",
             document_path.display()
         )
     })?;
 
-    scene_hierarchy_from_document_value(mod_id, scene_id, &document, &value)
+    scene_hierarchy_from_document_value(mod_id, scene_id, &compiled.document, &compiled.value)
 }
 
 pub fn scene_hierarchy_from_value(
